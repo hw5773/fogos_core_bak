@@ -32,7 +32,12 @@ public class FlexID implements FlexIDInterface {
 
     // TODO: Should implement this function
     public static FlexID generateDeviceID() {
-        return new FlexID();
+        byte[] testID = new byte[] {
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
+        };
+
+        return new FlexID(testID, FlexIDType.DEVICE, new AttrValuePairs(), null);
     }
 
     public byte[] getIdentity() {
