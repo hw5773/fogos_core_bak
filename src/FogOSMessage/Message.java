@@ -1,8 +1,8 @@
 package FogOSMessage;
+import FlexID.FlexID;
+import FlexID.AttrValuePairs;
 import FogOSControl.Core.CommunicationProtocol;
 import FogOSControl.Core.FogOSBroker;
-import versatile.flexid.AttrValuePairs;
-import versatile.flexid.FlexID;
 
 public abstract class Message {
     MessageType messageType;

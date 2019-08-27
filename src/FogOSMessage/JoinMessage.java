@@ -1,7 +1,7 @@
 package FogOSMessage;
 
+import FlexID.FlexID;
 import FogOSControl.Core.FogOSBroker;
-import versatile.flexid.FlexID;
 
 public class JoinMessage extends Message {
 

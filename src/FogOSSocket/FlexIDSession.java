@@ -1,7 +1,9 @@
 package FogOSSocket;
 
+import FlexID.FlexID;
+import FlexID.Locator;
+import FlexID.InterfaceType;
 import org.json.JSONObject;
-import versatile.flexid.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

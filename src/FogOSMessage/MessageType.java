@@ -1,6 +1,6 @@
 package FogOSMessage;
 
-import versatile.flexid.FlexID;
+import FlexID.FlexID;
 
 public enum MessageType {
     JOIN("/configuration/join"),

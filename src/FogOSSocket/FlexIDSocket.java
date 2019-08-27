@@ -1,6 +1,7 @@
 package FogOSSocket;
 
-import versatile.flexid.FlexID;
+
+import FlexID.FlexID;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;

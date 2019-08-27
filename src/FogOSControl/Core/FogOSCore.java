@@ -1,7 +1,7 @@
 package FogOSControl.Core;
 
 import FogOSMessage.*;
-import versatile.flexid.FlexID;
+import FlexID.FlexID;
 
 import java.util.LinkedList;
 
