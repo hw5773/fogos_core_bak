@@ -53,8 +53,10 @@ public class FogOSCore {
                 msg = new JoinMessage(deviceID);
                 break;
             case JOIN_ACK:
+                msg = new JoinAckMessage(deviceID);
                 break;
             case STATUS:
+
                 break;
             case STATUS_ACK:
                 break;
@@ -88,6 +90,6 @@ public class FogOSCore {
     }
 
     public Message sendMessage(Message msg) {
-        return msg.send(broker);
+        return msg.send(broker, null);
     }
 }

@@ -13,7 +13,7 @@ public class RequestMessage extends Message {
     }
 
     @Override
-    public Message send(FogOSBroker broker) {
+    public Message send(FogOSBroker broker, FlexID deviceID) {
         return null;
     }
 }

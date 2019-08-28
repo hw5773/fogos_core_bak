@@ -3,14 +3,14 @@ package FogOSMessage;
 import FlexID.FlexID;
 import FogOSControl.Core.FogOSBroker;
 
-public class JoinAckMessage extends Message {
+public class StatusMessage extends Message {
 
-    public JoinAckMessage() {
-        super(MessageType.JOIN_ACK);
+    public StatusMessage() {
+        super(MessageType.STATUS);
     }
 
-    public JoinAckMessage(FlexID deviceID) {
-        super(MessageType.JOIN_ACK, deviceID);
+    public StatusMessage(FlexID deviceID) {
+        super(MessageType.STATUS, deviceID);
     }
 
     @Override

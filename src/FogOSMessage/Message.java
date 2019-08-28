@@ -1,7 +1,6 @@
 package FogOSMessage;
 import FlexID.FlexID;
 import FlexID.AttrValuePairs;
-import FogOSControl.Core.CommunicationProtocol;
 import FogOSControl.Core.FogOSBroker;
 
 public abstract class Message {
@@ -52,5 +51,5 @@ public abstract class Message {
     }
 
     // TODO: Implement this function or Abstract?
-    public abstract Message send(FogOSBroker broker);
+    public abstract Message send(FogOSBroker broker, FlexID deviceID);
 }

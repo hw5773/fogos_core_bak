@@ -14,7 +14,8 @@ public class QueryMessage extends Message {
     }
 
     @Override
-    public Message send(FogOSBroker broker) {
+    public Message send(FogOSBroker broker, FlexID deviceID) {
+        ReplyMessage replyMessage = new ReplyMessage();
         return null;
     }
 }
