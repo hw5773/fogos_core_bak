@@ -2,18 +2,22 @@ package FogOSMessage;
 
 import FlexID.FlexID;
 import FogOSControl.Core.FogOSBroker;
-import org.json.JSONArray;
+
+import java.util.ArrayList;
+import java.util.logging.Level;
 
 public class ReplyMessage extends Message {
-    private JSONArray idList;
+    private ArrayList<ReplyEntry> replyList;
+    private static final String TAG = "FogOSMessage";
 
     public ReplyMessage() {
         super(MessageType.REPLY);
-        idList = null;
+        replyList = new ArrayList<ReplyEntry>();
     }
 
     public ReplyMessage(FlexID deviceID) {
         super(MessageType.REPLY, deviceID);
+        replyList = new ArrayList<ReplyEntry>();
     }
 
     @Override
@@ -21,5 +25,12 @@ public class ReplyMessage extends Message {
         return null;
     }
 
-    public JSONArray getIDList() { return idList; }
+    public void addReplyEntry(String title, String desc, FlexID flexID) {
+        ReplyEntry entry = new ReplyEntry(title, desc, flexID);
+        this.replyList.add(entry);
+    }
+
+    public ArrayList<ReplyEntry> getReplyList() {
+        return replyList;
+    }
 }

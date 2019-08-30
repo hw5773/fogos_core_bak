@@ -4,10 +4,16 @@ import FlexID.FlexID;
 import FogOSControl.Core.FogOSCore;
 import FogOSMessage.*;
 
+import java.util.logging.Level;
+
 public class FogOSClient implements FogOSClientAPI {
     private FogOSCore core;
+    private static final String TAG = "FogOSClient";
+
     public FogOSClient() {
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize FogOSClient");
         core = new FogOSCore();
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: Initialize FogOSClient");
     }
 
     public QueryMessage makeQueryMessage() {
@@ -21,7 +27,7 @@ public class FogOSClient implements FogOSClientAPI {
     }
 
     public ReplyMessage sendQueryMessage(QueryMessage queryMessage) {
-        return null;
+        return (ReplyMessage) core.sendMessage(queryMessage);
     }
 
     public RequestMessage makeRequestMessage() {
@@ -30,12 +36,15 @@ public class FogOSClient implements FogOSClientAPI {
     }
 
     public RequestMessage makeRequestMessage(FlexID id) {
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: makeRequestMessage()");
         RequestMessage requestMessage = (RequestMessage) core.generateMessage(MessageType.REQUEST);
-        requestMessage.addAttrValuePair("id", id.getIdentity().toString());
+        requestMessage.setPeerID(id);
+        requestMessage.addAttrValuePair("id", id.getStringIdentity());
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: makeRequestMessage()");
         return requestMessage;
     }
 
     public ResponseMessage sendRequestMessage(RequestMessage requestMessage) {
-        return null;
+        return (ResponseMessage) core.sendMessage(requestMessage);
     }
 }

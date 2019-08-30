@@ -1,8 +1,11 @@
 package FlexID;
 
+import java.util.logging.Level;
+
 public class FlexID implements FlexIDInterface {
     private static final String TAG = "FogOSFlexID";
     private byte[] identity;         // The hash value of the public key
+    private String sidentity;
     private byte[] priv;             // The private key corresponding to the above public key
     private FlexIDType type;          // The type of Flex ID
     private AttrValuePairs avps;      // The attribute-value pairs of Flex ID
@@ -13,9 +16,16 @@ public class FlexID implements FlexIDInterface {
     }
 
     public FlexID(String id) {
-        //System.out.println("Identity in String: " + id);
+        sidentity = id;
         identity = id.getBytes();
-        //System.out.println("Identity in byte[]: " + new String(identity));
+        priv = null;
+        type = FlexIDType.ANY;
+        avps = new AttrValuePairs();
+        loc = null;
+    }
+
+    public FlexID(byte[] id) {
+        identity = id;
         priv = null;
         type = FlexIDType.ANY;
         avps = new AttrValuePairs();
@@ -24,6 +34,7 @@ public class FlexID implements FlexIDInterface {
 
     public FlexID(byte[] identity, FlexIDType type, AttrValuePairs avps, Locator loc) {
         this.identity = identity;
+        this.sidentity = new String(identity);
         this.type = type;
         this.avps = avps;
         this.loc = loc;
@@ -42,6 +53,10 @@ public class FlexID implements FlexIDInterface {
 
     public byte[] getIdentity() {
         return identity;
+    }
+
+    public String getStringIdentity() {
+        return new String(identity);
     }
 
     public void setIdentity(byte[] identity) {

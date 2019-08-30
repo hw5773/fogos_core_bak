@@ -11,7 +11,7 @@ public abstract class Message {
     public Message(FlexID deviceID) {
         this.messageType = null;
         this.deviceID = deviceID;
-        body = null;
+        body = new AttrValuePairs();
     }
 
     public Message(MessageType messageType) {

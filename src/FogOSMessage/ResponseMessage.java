@@ -24,10 +24,11 @@ public class ResponseMessage extends Message {
         return null;
     }
 
+    public void setPeerID(FlexID peerID) {
+        this.peerID = peerID;
+    }
+
     public FlexID getPeerID() {
-        // TODO: The following is the test return value.
-        Locator locator = new Locator(InterfaceType.WIFI, "192.168.0.128", 3333);
-        peerID.setLocator(locator);
         return peerID;
     }
 }
