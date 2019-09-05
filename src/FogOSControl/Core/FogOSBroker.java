@@ -13,7 +13,7 @@ public class FogOSBroker {
 
     public FogOSBroker(String name) {
         this.name = name;
-        this.port = 3333;
+        this.port = 1883;
         this.protocol = CommunicationProtocol.MQTT;
     }
 

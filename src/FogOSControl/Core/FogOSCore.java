@@ -236,7 +236,7 @@ public class FogOSCore {
 
     public void connect(FlexID deviceID){
         try {
-            mqttClient = new MqttClient("tcp://" + broker.getName() + ":1883", deviceID.getStringIdentity(), new MemoryPersistence());
+            mqttClient = new MqttClient("tcp://" + broker.getName() + ":" + broker.getPort(), deviceID.getStringIdentity(), new MemoryPersistence());
             MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
             mqttConnectOptions.setCleanSession(true);
             mqttConnectOptions.setKeepAliveInterval(15);
