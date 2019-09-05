@@ -4,23 +4,36 @@ import FogOSMessage.*;
 import FlexID.FlexID;
 import FlexID.Locator;
 import FlexID.InterfaceType;
+import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.*;
 
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FogOSCore {
     private final String cloudName = "www.versatile-cloud.com";
     private final int cloudPort = 3333;
     private LinkedList<FogOSBroker> brokers;
-    private FogOSBroker broker;
+    private FogOSBroker broker = new FogOSBroker("147.46.219.79");
     private FlexID deviceID;
     private ContentStore store;
+    private MqttClient mqttClient;
     private static final String TAG = "FogOSCore";
 
     public FogOSCore() {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize FogOSCore");
+
         retrieveBrokerList();
         broker = findBestFogOSBroker();
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Result: findBestFogOSBroker() " + broker.getName());
         store = new ContentStore();
 
         deviceID = FlexID.generateDeviceID();
@@ -33,9 +46,14 @@ public class FogOSCore {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: retrieveBrokerList()");
         // TODO: Implement this function
         // request the list to the cloud
-
         // parse the response and add brokers to "brokers"
-        brokers = new LinkedList<FogOSBroker>();
+        NetworkThread thread = new NetworkThread();
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: retrieveBrokerList()");
     }
 
@@ -44,25 +62,117 @@ public class FogOSCore {
     {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: findBestFogOSBroker()");
 
-        // TODO: Implement this function
+        Double rtt1 = 0.0;
+        Double rtt2 = 0.0;
+        try {
+            Process process = Runtime.getRuntime().exec("/system/bin/ping -c 3 " + brokers.get(0).getName());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder builder = new StringBuilder();
+            String line;
+
+            while((line = reader.readLine()) != null){
+                builder.append(line);
+            }
+            String result1 = builder.toString();
+
+            process = Runtime.getRuntime().exec("/system/bin/ping -c 3 " + brokers.get(1).getName());
+            reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            builder = new StringBuilder();
+
+            while((line = reader.readLine()) != null){
+                builder.append(line);
+            }
+            String result2 = builder.toString();
+
+            rtt1 = getPingStats(result1);
+            rtt2 = getPingStats(result2);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: findBestFogOSBroker()");
-        return null;
+
+        if (rtt1 <= rtt2)
+            return brokers.get(0);
+        else
+            return brokers.get(1);
+    }
+
+    class NetworkThread extends Thread{
+
+        @Override
+        public void run() {
+            brokers = new LinkedList<FogOSBroker>();
+            try {
+                URL url = new URL("http://" + cloudName + ":" + cloudPort + "/brokers");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                if(conn.getResponseCode() == 200){
+                    InputStream stream = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "utf-8"));
+                    StringBuilder builder = new StringBuilder();
+                    String line;
+
+                    while((line = reader.readLine()) != null){
+                        builder.append(line);
+                    }
+
+                    JSONObject object = new JSONObject(builder.toString());
+                    if(object.length() != 0){
+                        JSONArray array = object.getJSONArray("brokers");
+
+                        for(int i = 0; i < array.length(); i++){
+                            String name = array.getJSONObject(i).getString("name");
+                            brokers.add(new FogOSBroker(name));
+                        }
+                    }
+                }
+            } catch (MalformedURLException | ProtocolException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    Double getPingStats(String result){
+        Double rtt = 1000.0;
+
+        if(result.contains("unknown host") || result.contains("100% packet loss")){
+
+        } else if(result.contains("% packet loss")){
+            int start = result.indexOf("rtt min/avg/max/mdev");
+            int end = result.indexOf("ms", start);
+            String stats = result.substring(start + 23, end);
+            rtt = Double.parseDouble(stats.split("/")[1]);
+        } else{
+
+        }
+
+        return rtt;
     }
 
     // Initialize subscriptions with the selected broker
     void initSubscribe(FlexID deviceID) {
-        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: initSubscribe()");
-        byte[] joinAckTopic = MessageType.JOIN_ACK.getTopicWithDeviceID(deviceID);
-        byte[] leaveAckTopic = MessageType.LEAVE_ACK.getTopicWithDeviceID(deviceID);
-        byte[] statusAckTopic = MessageType.STATUS_ACK.getTopicWithDeviceID(deviceID);
-        byte[] registerAckTopic = MessageType.REGISTER_ACK.getTopicWithDeviceID(deviceID);
-        byte[] updateAckTopic = MessageType.UPDATE_ACK.getTopicWithDeviceID(deviceID);
-        byte[] mapUpdateAckTopic = MessageType.MAP_UPDATE_ACK.getTopicWithDeviceID(deviceID);
+        Logger.getLogger(TAG).log(Level.INFO, "Start: initSubscribe()");
 
-        // TODO: Implement this function.
+        deviceID = new FlexID("versatile");
+        connect(deviceID);
 
-        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: initSubscribe()");
+        subscribe(MessageType.JOIN_ACK.getTopicWithDeviceID(deviceID));
+        subscribe(MessageType.LEAVE_ACK.getTopicWithDeviceID(deviceID));
+        subscribe(MessageType.STATUS_ACK.getTopicWithDeviceID(deviceID));
+        subscribe(MessageType.REGISTER_ACK.getTopicWithDeviceID(deviceID));
+        subscribe(MessageType.UPDATE_ACK.getTopicWithDeviceID(deviceID));
+        subscribe(MessageType.MAP_UPDATE_ACK.getTopicWithDeviceID(deviceID));
+        publish(MessageType.JOIN.getTopicWithDeviceID(deviceID), generateMessage(MessageType.JOIN));
+
+        Logger.getLogger(TAG).log(Level.INFO, "Finish: initSubscribe()");
     }
 
     public Message generateMessage(MessageType messageType) {
@@ -70,6 +180,18 @@ public class FogOSCore {
         switch (messageType) {
             case JOIN:
                 msg = new JoinMessage(deviceID);
+                try {
+                    JSONArray uniqueCodes = new JSONArray("[{\"ifaceType\":\"wifi\",\"hwAddress\":\"00-1a-e9-8d-08-73\",\"ipv4\":\"143.248.30.13\",\"wifiSSID\":\"Welcome_KAIST\"},{ \"ifaceType\":\"lte\",\"hwAddress\":\"00:1a:e9:8d:08:74\",\"ipv4\":\"10.0.3.15\"}]");
+                    JSONArray relay = new JSONArray("[\"fh2gj1g\", \"d3hsv5a35\"]");
+                    JSONArray neighbors = new JSONArray("[{\"neighborIface\":\"wifi\", \"neighborIpv4\":\"10.0.0.42\", \"neighborFlexID\":\"asdf\"}, {\"neighborIface\":\"blue tooth\", \"neighborHwAddress\":\"00:11:22:33:aa:bb\", \"neighborFlexID\":\"asdf12\"}]");
+                    String pubkey= "a32adf";
+                    msg.addAttrValuePair("uniqueCodes", uniqueCodes.toString());
+                    msg.addAttrValuePair("relay", relay.toString());
+                    msg.addAttrValuePair("neighbors", neighbors.toString());
+                    msg.addAttrValuePair("pubKey", pubkey);
+                } catch (JSONException e) {
+                e.printStackTrace();
+                }
                 break;
             case JOIN_ACK:
                 msg = new JoinAckMessage(deviceID);
@@ -110,6 +232,74 @@ public class FogOSCore {
         }
 
         return msg;
+    }
+
+    public void connect(FlexID deviceID){
+        try {
+            mqttClient = new MqttClient("tcp://" + broker.getName() + ":1883", deviceID.getStringIdentity(), new MemoryPersistence());
+            MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
+            mqttConnectOptions.setCleanSession(true);
+            mqttConnectOptions.setKeepAliveInterval(15);
+            mqttConnectOptions.setConnectionTimeout(30);
+            mqttClient.setCallback(new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable throwable) {
+                    Logger.getLogger(TAG).log(Level.INFO, "Mqtt: connectionLost");
+                }
+
+                @Override
+                public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+                    Logger.getLogger(TAG).log(Level.INFO, "Mqtt: messageArrived");
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
+                    Logger.getLogger(TAG).log(Level.INFO, "Mqtt: deliveryComplete");
+                }
+            });
+
+            mqttClient.connect(mqttConnectOptions);
+        } catch (MqttSecurityException ex) {
+            ex.printStackTrace();
+        } catch (MqttException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void disconnect(){
+        try {
+            mqttClient.disconnect();
+            Logger.getLogger(TAG).log(Level.INFO, "Mqtt: disconnect()");
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void subscribe(String topic){
+        try {
+            mqttClient.subscribe(topic, new IMqttMessageListener() {
+                @Override
+                public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+                    Logger.getLogger(TAG).log(Level.INFO, "Mqtt: messageArrived()");
+                    Logger.getLogger(TAG).log(Level.INFO, "Mqtt: " + s + mqttMessage);
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void publish(String topic, Message msg){
+        try {
+            mqttClient.publish(topic, new MqttMessage(getStringFromHashTable(msg.getAttrValueTable()).getBytes()));
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getStringFromHashTable(Hashtable hashtable) {
+        JSONObject jsonObject = new JSONObject(hashtable);
+        return jsonObject.toString();
     }
 
     public Message sendMessage(Message msg) {
