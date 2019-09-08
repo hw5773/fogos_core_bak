@@ -30,13 +30,9 @@ public enum MessageType {
         return topic;
     }
 
-    public byte[] getTopicWithDeviceID(FlexID deviceID) {
-        byte[] topic = this.getTopic().getBytes();
-        byte[] idbytes = deviceID.getIdentity();
-        byte[] ret = new byte[topic.length + 1 + idbytes.length];
-        System.arraycopy(topic, 0, ret, 0, topic.length);
-        ret[topic.length] = '/';
-        System.arraycopy(idbytes, 0, ret, topic.length + 1, idbytes.length);
-        return ret;
+    public String getTopicWithDeviceID(FlexID deviceID) {
+        String topic = this.getTopic();
+        String id = deviceID.getStringIdentity();
+        return topic + "/" + id;
     }
 }

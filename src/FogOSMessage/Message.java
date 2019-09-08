@@ -2,6 +2,9 @@ package FogOSMessage;
 import FlexID.FlexID;
 import FlexID.AttrValuePairs;
 import FogOSControl.Core.FogOSBroker;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+
+import java.util.Hashtable;
 
 public abstract class Message {
     MessageType messageType;
@@ -49,6 +52,8 @@ public abstract class Message {
     public String getValueByAttr(String attr) {
         return this.body.getValueByAttr(attr);
     }
+
+    public Hashtable getAttrValueTable(){ return this.body.getTable(); }
 
     // TODO: Implement this function or Abstract?
     public abstract Message send(FogOSBroker broker, FlexID deviceID);
