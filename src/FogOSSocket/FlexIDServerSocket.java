@@ -51,7 +51,7 @@ public class FlexIDServerSocket {
     }
 
     public String getInetAddress() {
-        return "147.46.216.213";
+        return server.getInetAddress().getHostAddress();
     }
 
     public int getPort() {

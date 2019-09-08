@@ -105,11 +105,7 @@ public class FlexIDSocket {
     }
 
     public String getInetAddress() {
-        String ip = "";
-
-        ip = socket.getInetAddress().getHostAddress();
-
-        return ip;
+        return socket.getInetAddress().getHostAddress();
     }
 
     public int getPort() {
