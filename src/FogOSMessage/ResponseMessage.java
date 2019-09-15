@@ -1,9 +1,7 @@
 package FogOSMessage;
 
 import FlexID.FlexID;
-import FlexID.Locator;
-import FlexID.InterfaceType;
-import FogOSControl.Core.FogOSBroker;
+import FogOSCore.FogOSBroker;
 
 public class ResponseMessage extends Message {
     private FlexID peerID;

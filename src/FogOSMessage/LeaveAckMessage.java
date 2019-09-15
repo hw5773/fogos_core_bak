@@ -1,7 +1,7 @@
 package FogOSMessage;
 
 import FlexID.FlexID;
-import FogOSControl.Core.FogOSBroker;
+import FogOSCore.FogOSBroker;
 
 public class LeaveAckMessage extends Message {
 

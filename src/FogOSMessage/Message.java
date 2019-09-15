@@ -1,8 +1,7 @@
 package FogOSMessage;
 import FlexID.FlexID;
 import FlexID.AttrValuePairs;
-import FogOSControl.Core.FogOSBroker;
-import org.eclipse.paho.client.mqttv3.MqttClient;
+import FogOSCore.FogOSBroker;
 
 import java.util.Hashtable;
 

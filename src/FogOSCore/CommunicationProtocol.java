@@ -1,4 +1,4 @@
-package FogOSControl.Core;
+package FogOSCore;
 
 public enum CommunicationProtocol {
     MQTT("mqtt"),

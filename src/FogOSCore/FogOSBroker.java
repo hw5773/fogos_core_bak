@@ -1,4 +1,4 @@
-package FogOSControl.Core;
+package FogOSCore;
 
 public class FogOSBroker {
     private String name;

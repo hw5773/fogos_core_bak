@@ -1,18 +1,19 @@
-package FogOSControl.Core;
+package FogOSCore;
 
 import FogOSMessage.*;
 import FlexID.FlexID;
 import FlexID.Locator;
 import FlexID.InterfaceType;
+import FogOSSecurity.Role;
+import FogOSSecurity.SecureFlexIDSession;
+import FogOSSocket.FlexIDSession;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.*;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
+import java.net.*;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.logging.Level;
@@ -26,6 +27,12 @@ public class FogOSCore {
     private FlexID deviceID;
     private ContentStore store;
     private MqttClient mqttClient;
+    private boolean ready = false;
+
+    // Session and Mobility-related
+    private LinkedList<SecureFlexIDSession> sessionList;
+    private MobilityDetector mobilityDetector;
+
     private static final String TAG = "FogOSCore";
 
     public FogOSCore() {
@@ -35,6 +42,11 @@ public class FogOSCore {
         broker = findBestFogOSBroker();
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Result: findBestFogOSBroker() " + broker.getName());
         store = new ContentStore();
+
+        sessionList = new LinkedList<>();
+        mobilityDetector = new MobilityDetector();
+
+        // Initilaize the mobility detector
 
         deviceID = FlexID.generateDeviceID();
         initSubscribe(deviceID);
@@ -140,6 +152,54 @@ public class FogOSCore {
         }
     }
 
+    private class MobilityDetector {
+        boolean checkAddress(FlexID id) {
+            boolean ret;
+            String ip = "";
+
+            while (ip.equals("")) {
+                ip = getLocalIpAddress();
+            }
+
+            if (id.getLocator().getAddr().equals(ip)) {
+                ret = false;
+            } else {
+                ret = true;
+                while (ready == false) {}
+                id.getLocator().setAddr(getLocalIpAddress());
+
+                // Notify the mobility to FlexIDSessions.
+
+            }
+            return ret;
+        }
+
+        String getLocalIpAddress() {
+            String ip = "";
+
+            try {
+                Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces();
+
+                while (enumNetworkInterfaces.hasMoreElements()) {
+                    NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
+                    Enumeration<InetAddress> enumInetAddress = networkInterface.getInetAddresses();
+
+                    while (enumInetAddress.hasMoreElements()) {
+                        InetAddress inetAddress = enumInetAddress.nextElement();
+
+                        if (inetAddress.isSiteLocalAddress()) {
+                            ip = inetAddress.getHostAddress();
+                        }
+                    }
+                }
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+
+            return ip;
+        }
+    }
+
     Double getPingStats(String result){
         Double rtt = 1000.0;
 
@@ -197,7 +257,6 @@ public class FogOSCore {
                 msg = new JoinAckMessage(deviceID);
                 break;
             case STATUS:
-
                 break;
             case STATUS_ACK:
                 break;
@@ -339,5 +398,18 @@ public class FogOSCore {
         }
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: sendMessage()");
         return msg.send(broker, deviceID);
+    }
+
+    public SecureFlexIDSession createSecureFlexIDSession(Role role, FlexID sFID, FlexID dFID)
+    {
+        SecureFlexIDSession secureFlexIDSession = new SecureFlexIDSession(role, sFID, dFID);
+        sessionList.add(secureFlexIDSession);
+        return secureFlexIDSession;
+    }
+
+    public void destroySecureFlexIDSession(SecureFlexIDSession secureFlexIDSession)
+    {
+        secureFlexIDSession.getFlexIDSession().close();
+        sessionList.remove(secureFlexIDSession);
     }
 }

@@ -1,8 +1,10 @@
-package FogOSControl.Client;
+package FogOSClient;
 
 import FlexID.FlexID;
-import FogOSControl.Core.FogOSCore;
+import FogOSCore.FogOSCore;
 import FogOSMessage.*;
+import FogOSSecurity.Role;
+import FogOSSecurity.SecureFlexIDSession;
 
 import java.util.logging.Level;
 
@@ -46,5 +48,10 @@ public class FogOSClient implements FogOSClientAPI {
 
     public ResponseMessage sendRequestMessage(RequestMessage requestMessage) {
         return (ResponseMessage) core.sendMessage(requestMessage);
+    }
+
+    public SecureFlexIDSession createSecureFlexIDSession(Role role, FlexID sFID, FlexID dFID)
+    {
+        return core.createSecureFlexIDSession(role, sFID, dFID);
     }
 }

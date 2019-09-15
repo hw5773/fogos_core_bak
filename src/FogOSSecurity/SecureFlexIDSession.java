@@ -3,19 +3,19 @@ package FogOSSecurity;
 import FlexID.FlexID;
 import FogOSSocket.FlexIDSession;
 
-public class SecureFlexIDSocket {
+public class SecureFlexIDSession {
     private Role role;
     private SecurityParameters securityParameters;
     private HandshakeProtocolManager handshakeManager;
     private RecordProtocolManager recordManager;
     private FlexIDSession flexIDSession;
 
-    SecureFlexIDSocket(Role role, FlexID sFID, FlexID dFID) {
+    public SecureFlexIDSession(Role role, FlexID sFID, FlexID dFID) {
         initialization(role);
         flexIDSession = new FlexIDSession(sFID, dFID);
     }
 
-    SecureFlexIDSocket(Role role, FlexIDSession flexIDSession) {
+    public SecureFlexIDSession(Role role, FlexIDSession flexIDSession) {
         initialization(role);
         setFlexIDSession(flexIDSession);
     }

@@ -1,4 +1,4 @@
-package FogOSControl.Client;
+package FogOSClient;
 
 import FlexID.FlexID;
 import FogOSMessage.QueryMessage;

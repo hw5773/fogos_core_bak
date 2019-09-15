@@ -1,10 +1,9 @@
 package FogOSMessage;
 
 import FlexID.FlexID;
-import FogOSControl.Core.FogOSBroker;
+import FogOSCore.FogOSBroker;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 public class ReplyMessage extends Message {
     private ArrayList<ReplyEntry> replyList;
