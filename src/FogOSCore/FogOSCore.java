@@ -6,16 +6,13 @@ import FlexID.Locator;
 import FlexID.InterfaceType;
 import FogOSSecurity.Role;
 import FogOSSecurity.SecureFlexIDSession;
-import FogOSSocket.FlexIDSession;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.*;
 
 import java.io.*;
 import java.net.*;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,12 +24,19 @@ public class FogOSCore {
     private FlexID deviceID;
     private ContentStore store;
     private MqttClient mqttClient;
+    private HashMap<String, Queue<Message>> receivedMessages;
 
     // Session and Mobility-related
     private LinkedList<SecureFlexIDSession> sessionList;
+
+    // A thread that periodically detects any change of a locator (e.g., IP address)
     private Runnable mobilityDetector;
+
+    // A thread that periodically reports a status of resources in the device
     private Runnable resourceReporter;
-    private Runnable qosInterpreter;
+
+    // QoS Interpreter
+    private QoSInterpreter qosInterpreter;
 
     private static final String TAG = "FogOSCore";
 
@@ -45,6 +49,7 @@ public class FogOSCore {
         store = new ContentStore();
 
         sessionList = new LinkedList<>();
+        initReceivedMessages();
 
         // Initialize and run the mobility detector
         mobilityDetector = new MobilityDetector(this);
@@ -56,14 +61,55 @@ public class FogOSCore {
 
         // Initialize and run the QoS interpreter
         qosInterpreter = new QoSInterpreter(this);
-        new Thread(qosInterpreter).start();
 
         // Generate the Flex ID of the device
-        deviceID = FlexID.generateDeviceID();
+        // deviceID = FlexID.generateDeviceID();
+        deviceID = new FlexID("versatile");
+
+        // Initialize the MQTT client
+        connect(deviceID);
 
         // Initialize the subscription to necessary messages
         initSubscribe(deviceID);
+
+        // Send the JOIN message
+        // TODO: Need to generalize the message
+        Message msg = new JoinMessage(deviceID);
+        msg.test(broker); // This should be commented out after being generalized.
+
+        try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: Initialize FogOSCore");
+    }
+
+    public LinkedList<SecureFlexIDSession> getSessionList() {
+        return sessionList;
+    }
+
+    public QoSInterpreter getQosInterpreter() {
+        return qosInterpreter;
+    }
+
+    private void initReceivedMessages() {
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize Received Messages");
+        receivedMessages = new HashMap<String, Queue<Message>>();
+        receivedMessages.put(MessageType.JOIN_ACK.getTopic(), new LinkedList<>());
+        receivedMessages.put(MessageType.LEAVE_ACK.getTopic(), new LinkedList<>());
+        receivedMessages.put(MessageType.MAP_UPDATE_ACK.getTopic(), new LinkedList<>());
+        receivedMessages.put(MessageType.REGISTER_ACK.getTopic(), new LinkedList<>());
+        receivedMessages.put(MessageType.REPLY.getTopic(), new LinkedList<>());
+        receivedMessages.put(MessageType.RESPONSE.getTopic(), new LinkedList<>());
+        receivedMessages.put(MessageType.STATUS_ACK.getTopic(), new LinkedList<>());
+        receivedMessages.put(MessageType.UPDATE_ACK.getTopic(), new LinkedList<>());
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: Initialize Received Messages");
+    }
+
+    public FogOSBroker getBroker() {
+        return broker;
     }
 
     // Access to the cloud to get the list of the FogOS brokers
@@ -188,12 +234,13 @@ public class FogOSCore {
         return rtt;
     }
 
+    public FlexID getDeviceID() {
+        return deviceID;
+    }
+
     // Initialize subscriptions with the selected broker
     void initSubscribe(FlexID deviceID) {
         Logger.getLogger(TAG).log(Level.INFO, "Start: initSubscribe()");
-
-        deviceID = new FlexID("versatile");
-        connect(deviceID);
 
         subscribe(MessageType.JOIN_ACK.getTopicWithDeviceID(deviceID));
         subscribe(MessageType.LEAVE_ACK.getTopicWithDeviceID(deviceID));
@@ -201,51 +248,20 @@ public class FogOSCore {
         subscribe(MessageType.REGISTER_ACK.getTopicWithDeviceID(deviceID));
         subscribe(MessageType.UPDATE_ACK.getTopicWithDeviceID(deviceID));
         subscribe(MessageType.MAP_UPDATE_ACK.getTopicWithDeviceID(deviceID));
-        publish(MessageType.JOIN.getTopicWithDeviceID(deviceID), generateMessage(MessageType.JOIN));
 
         Logger.getLogger(TAG).log(Level.INFO, "Finish: initSubscribe()");
     }
 
+    // Generate the Edge Utilization Messages for an application
     public Message generateMessage(MessageType messageType) {
         Message msg = null;
         switch (messageType) {
-            case JOIN:
-                msg = new JoinMessage(deviceID);
-                try {
-                    JSONArray uniqueCodes = new JSONArray("[{\"ifaceType\":\"wifi\",\"hwAddress\":\"00-1a-e9-8d-08-73\",\"ipv4\":\"143.248.30.13\",\"wifiSSID\":\"Welcome_KAIST\"},{ \"ifaceType\":\"lte\",\"hwAddress\":\"00:1a:e9:8d:08:74\",\"ipv4\":\"10.0.3.15\"}]");
-                    JSONArray relay = new JSONArray("[\"fh2gj1g\", \"d3hsv5a35\"]");
-                    JSONArray neighbors = new JSONArray("[{\"neighborIface\":\"wifi\", \"neighborIpv4\":\"10.0.0.42\", \"neighborFlexID\":\"asdf\"}, {\"neighborIface\":\"blue tooth\", \"neighborHwAddress\":\"00:11:22:33:aa:bb\", \"neighborFlexID\":\"asdf12\"}]");
-                    String pubkey= "a32adf";
-                    msg.addAttrValuePair("uniqueCodes", uniqueCodes.toString());
-                    msg.addAttrValuePair("relay", relay.toString());
-                    msg.addAttrValuePair("neighbors", neighbors.toString());
-                    msg.addAttrValuePair("pubKey", pubkey);
-                } catch (JSONException e) {
-                e.printStackTrace();
-                }
-                break;
-            case JOIN_ACK:
-                msg = new JoinAckMessage(deviceID);
-                break;
-            case STATUS:
-                break;
-            case STATUS_ACK:
-                break;
-            case LEAVE:
-                break;
-            case LEAVE_ACK:
-                break;
             case REGISTER:
-                break;
-            case REGISTER_ACK:
+                msg = new RegisterMessage(deviceID);
                 break;
             case UPDATE:
                 break;
-            case UPDATE_ACK:
-                break;
             case MAP_UPDATE:
-                break;
-            case MAP_UPDATE_ACK:
                 break;
             case QUERY:
                 msg = new QueryMessage(deviceID);
@@ -265,7 +281,9 @@ public class FogOSCore {
     }
 
     public void connect(FlexID deviceID){
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: connect()");
         try {
+            java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "broker.getName(): " + broker.getName() + " / broker.getPort(): " + broker.getPort() + " / deviceID.getStringIdentity(): " + deviceID.getStringIdentity());
             mqttClient = new MqttClient("tcp://" + broker.getName() + ":" + broker.getPort(), deviceID.getStringIdentity(), new MemoryPersistence());
             MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
             mqttConnectOptions.setCleanSession(true);
@@ -280,6 +298,26 @@ public class FogOSCore {
                 @Override
                 public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
                     Logger.getLogger(TAG).log(Level.INFO, "Mqtt: messageArrived");
+
+                    if (s.startsWith(MessageType.JOIN_ACK.getTopic())) {
+
+                    } else if (s.startsWith(MessageType.LEAVE_ACK.getTopic())) {
+
+                    } else if (s.startsWith(MessageType.MAP_UPDATE_ACK.getTopic())) {
+
+                    } else if (s.startsWith(MessageType.REGISTER_ACK.getTopic())) {
+
+                    } else if (s.startsWith(MessageType.STATUS_ACK.getTopic())) {
+
+                    } else if (s.startsWith(MessageType.REPLY.getTopic())) {
+
+                    } else if (s.startsWith(MessageType.RESPONSE.getTopic())) {
+
+                    } else if (s.startsWith(MessageType.UPDATE_ACK.getTopic())) {
+
+                    } else {
+                        // No recognized message.
+                    }
                 }
 
                 @Override
@@ -289,11 +327,13 @@ public class FogOSCore {
             });
 
             mqttClient.connect(mqttConnectOptions);
+            broker.setMqttClient(mqttClient);
         } catch (MqttSecurityException ex) {
             ex.printStackTrace();
         } catch (MqttException ex) {
             ex.printStackTrace();
         }
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: connect()");
     }
 
     public void disconnect(){
@@ -319,21 +359,21 @@ public class FogOSCore {
         }
     }
 
-    public void publish(String topic, Message msg){
-        try {
-            mqttClient.publish(topic, new MqttMessage(getStringFromHashTable(msg.getAttrValueTable()).getBytes()));
-        } catch (MqttException e) {
-            e.printStackTrace();
+    public Message getReceivedMessage(String topic) {
+        return receivedMessages.get(topic).poll();
+    }
+
+    public void sendMessage(Message msg) {
+        if (msg.getMessageType() == MessageType.QUERY) {
+            qosInterpreter.checkQueryMessage((QueryMessage) msg);
+        } else if (msg.getMessageType() == MessageType.REQUEST) {
+            qosInterpreter.checkRequestMessage((RequestMessage) msg);
         }
+        msg.send(broker);
     }
 
-    public String getStringFromHashTable(Hashtable hashtable) {
-        JSONObject jsonObject = new JSONObject(hashtable);
-        return jsonObject.toString();
-    }
-
-    public Message sendMessage(Message msg) {
-        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: sendMessage(): MessageType: " + msg.getMessageType().toString());
+    public void testMessage(Message msg) {
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: testMessage(): MessageType: " + msg.getMessageType().toString());
 
         /* Test Returns */
         if (msg.getMessageType() == MessageType.QUERY && msg.getValueByAttr("keywords").equals("test")) {
@@ -350,9 +390,9 @@ public class FogOSCore {
             id = new FlexID("test");
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "id 3: " + id + " / ID 3: " + new String(id.getIdentity()));
             replyMessage.addReplyEntry("좌절에 빠진 독일 팬들", "예기치 못한 패배에 독일 팬들은 모두 울상을 짓고 있다.", id);
+            receivedMessages.get(MessageType.REPLY.getTopic()).add(replyMessage);
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Make a test list finished.");
-            java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: sendMessage()");
-            return replyMessage;
+            java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: testMessage()");
         } else if (msg.getMessageType() == MessageType.REQUEST) {
             RequestMessage requestMessage;
             requestMessage = (RequestMessage) msg;
@@ -363,12 +403,10 @@ public class FogOSCore {
             responseMessage = (ResponseMessage) generateMessage(MessageType.RESPONSE);
             responseMessage.setPeerID(new FlexID(msg.getValueByAttr("id")));
             responseMessage.getPeerID().setLocator(locator);
-
+            receivedMessages.get(MessageType.RESPONSE.getTopic()).add(responseMessage);
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Make a test response message finished.");
-            return responseMessage;
         }
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: sendMessage()");
-        return msg.send(broker, deviceID);
     }
 
     public SecureFlexIDSession createSecureFlexIDSession(Role role, FlexID sFID, FlexID dFID)

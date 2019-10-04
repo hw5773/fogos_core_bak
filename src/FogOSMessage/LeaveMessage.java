@@ -7,14 +7,21 @@ public class LeaveMessage extends Message {
 
     public LeaveMessage() {
         super(MessageType.LEAVE);
+        init();
     }
 
     public LeaveMessage(FlexID deviceID) {
         super(MessageType.LEAVE, deviceID);
+        init();
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        return null;
+    public void init() {
+
+    }
+
+    @Override
+    public void test(FogOSBroker broker) {
+
     }
 }

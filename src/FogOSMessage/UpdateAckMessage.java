@@ -7,14 +7,21 @@ public class UpdateAckMessage extends Message {
 
     public UpdateAckMessage() {
         super(MessageType.UPDATE_ACK);
+        init();
     }
 
     public UpdateAckMessage(FlexID deviceID) {
         super(MessageType.UPDATE_ACK, deviceID);
+        init();
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        return null;
+    public void init() {
+
+    }
+
+    @Override
+    public void test(FogOSBroker broker) {
+
     }
 }

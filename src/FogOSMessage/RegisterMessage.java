@@ -7,14 +7,21 @@ public class RegisterMessage extends Message {
 
     public RegisterMessage() {
         super(MessageType.REGISTER);
+        init();
     }
 
     public RegisterMessage(FlexID deviceID) {
         super(MessageType.REGISTER, deviceID);
+        init();
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        return null;
+    public void init() {
+
+    }
+
+    @Override
+    public void test(FogOSBroker broker) {
+
     }
 }

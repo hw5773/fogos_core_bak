@@ -7,15 +7,21 @@ public class QueryMessage extends Message {
 
     public QueryMessage() {
         super(MessageType.QUERY);
+        init();
     }
 
     public QueryMessage(FlexID deviceID) {
         super(MessageType.QUERY, deviceID);
+        init();
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        ReplyMessage replyMessage = new ReplyMessage();
-        return null;
+    public void init() {
+
+    }
+
+    @Override
+    public void test(FogOSBroker broker) {
+
     }
 }

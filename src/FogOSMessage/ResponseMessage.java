@@ -18,8 +18,13 @@ public class ResponseMessage extends Message {
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        return null;
+    public void init() {
+        
+    }
+
+    @Override
+    public void test(FogOSBroker broker) {
+
     }
 
     public void setPeerID(FlexID peerID) {

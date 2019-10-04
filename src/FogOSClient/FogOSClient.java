@@ -28,8 +28,17 @@ public class FogOSClient implements FogOSClientAPI {
         return queryMessage;
     }
 
-    public ReplyMessage sendQueryMessage(QueryMessage queryMessage) {
-        return (ReplyMessage) core.sendMessage(queryMessage);
+    // TODO: Currently, this function returns the test values
+    public void testQueryMessage(QueryMessage queryMessage) {
+        core.testMessage(queryMessage);
+    }
+
+    public void sendQueryMessage(QueryMessage queryMessage) {
+        core.sendMessage(queryMessage);
+    }
+
+    public ReplyMessage getReplyMessage() {
+        return (ReplyMessage) core.getReceivedMessage(MessageType.REPLY.getTopic());
     }
 
     public RequestMessage makeRequestMessage() {
@@ -46,8 +55,16 @@ public class FogOSClient implements FogOSClientAPI {
         return requestMessage;
     }
 
-    public ResponseMessage sendRequestMessage(RequestMessage requestMessage) {
-        return (ResponseMessage) core.sendMessage(requestMessage);
+    public void testRequestMessage(RequestMessage requestMessage) {
+        core.testMessage(requestMessage);
+    }
+
+    public void sendRequestMessage(RequestMessage requestMessage) {
+        core.sendMessage(requestMessage);
+    }
+
+    public ResponseMessage getResponseMessage() {
+        return (ResponseMessage) core.getReceivedMessage(MessageType.RESPONSE.getTopic());
     }
 
     public SecureFlexIDSession createSecureFlexIDSession(Role role, FlexID sFID, FlexID dFID)

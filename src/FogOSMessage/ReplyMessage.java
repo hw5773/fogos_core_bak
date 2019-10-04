@@ -11,17 +11,22 @@ public class ReplyMessage extends Message {
 
     public ReplyMessage() {
         super(MessageType.REPLY);
-        replyList = new ArrayList<ReplyEntry>();
+        init();
     }
 
     public ReplyMessage(FlexID deviceID) {
         super(MessageType.REPLY, deviceID);
+        init();
+    }
+
+    @Override
+    public void init() {
         replyList = new ArrayList<ReplyEntry>();
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        return null;
+    public void test(FogOSBroker broker) {
+
     }
 
     public void addReplyEntry(String title, String desc, FlexID flexID) {

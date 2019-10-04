@@ -7,14 +7,21 @@ public class StatusAckMessage extends Message {
 
     public StatusAckMessage() {
         super(MessageType.STATUS_ACK);
+        init();
     }
 
     public StatusAckMessage(FlexID deviceID) {
         super(MessageType.STATUS_ACK, deviceID);
+        init();
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        return null;
+    public void init() {
+
+    }
+
+    @Override
+    public void test(FogOSBroker broker) {
+
     }
 }

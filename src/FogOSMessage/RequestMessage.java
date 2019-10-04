@@ -8,15 +8,22 @@ public class RequestMessage extends Message {
 
     public RequestMessage() {
         super(MessageType.REQUEST);
+        init();
     }
 
     public RequestMessage(FlexID deviceID) {
         super(MessageType.REQUEST, deviceID);
+        init();
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        return null;
+    public void init() {
+
+    }
+
+    @Override
+    public void test(FogOSBroker broker) {
+
     }
 
     public FlexID getPeerID() {

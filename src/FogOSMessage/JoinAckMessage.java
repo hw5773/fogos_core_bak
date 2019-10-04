@@ -7,14 +7,21 @@ public class JoinAckMessage extends Message {
 
     public JoinAckMessage() {
         super(MessageType.JOIN_ACK);
+        init();
     }
 
     public JoinAckMessage(FlexID deviceID) {
         super(MessageType.JOIN_ACK, deviceID);
+        init();
     }
 
     @Override
-    public Message send(FogOSBroker broker, FlexID deviceID) {
-        return null;
+    public void init() {
+
+    }
+
+    @Override
+    public void test(FogOSBroker broker) {
+
     }
 }

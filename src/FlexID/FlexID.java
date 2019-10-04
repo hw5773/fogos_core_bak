@@ -4,12 +4,12 @@ import java.util.logging.Level;
 
 public class FlexID implements FlexIDInterface {
     private static final String TAG = "FogOSFlexID";
-    private byte[] identity;         // The hash value of the public key
+    private byte[] identity;            // The hash value of the public key
     private String sidentity;
-    private byte[] priv;             // The private key corresponding to the above public key
-    private FlexIDType type;          // The type of Flex ID
-    private AttrValuePairs avps;      // The attribute-value pairs of Flex ID
-    private Locator loc;              // The locator
+    private byte[] priv;                // The private key corresponding to the above public key
+    private FlexIDType type;            // The type of Flex ID
+    private AttrValuePairs avps;        // The attribute-value pairs of Flex ID
+    private Locator loc;                // The locator
 
     public FlexID() {
 

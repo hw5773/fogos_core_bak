@@ -11,14 +11,16 @@ public interface FogOSClientAPI {
     // QueryMessage-related
     QueryMessage makeQueryMessage();
     QueryMessage makeQueryMessage(String keywords);
-    ReplyMessage sendQueryMessage(QueryMessage queryMessage);
+    void sendQueryMessage(QueryMessage queryMessage);
 
     // ReplyMessage-related
+    ReplyMessage getReplyMessage();
 
     // RequestMessage-related
     RequestMessage makeRequestMessage();
     RequestMessage makeRequestMessage(FlexID id);
-    ResponseMessage sendRequestMessage(RequestMessage requestMessage);
+    void sendRequestMessage(RequestMessage requestMessage);
 
     // ResponseMessage-related
+    ResponseMessage getResponseMessage();
 }
