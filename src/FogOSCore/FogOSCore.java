@@ -23,15 +23,16 @@ public class FogOSCore {
     private final String cloudName = "www.versatile-cloud.com";
     private final int cloudPort = 3333;
     private LinkedList<FogOSBroker> brokers;
-    private FogOSBroker broker = new FogOSBroker("147.46.219.79");
+    private FogOSBroker broker;
     private FlexID deviceID;
     private ContentStore store;
     private MqttClient mqttClient;
-    private boolean ready = false;
 
     // Session and Mobility-related
     private LinkedList<SecureFlexIDSession> sessionList;
-    private MobilityDetector mobilityDetector;
+    private Runnable mobilityDetector;
+    private Runnable resourceReporter;
+    private Runnable qosInterpreter;
 
     private static final String TAG = "FogOSCore";
 
@@ -44,11 +45,23 @@ public class FogOSCore {
         store = new ContentStore();
 
         sessionList = new LinkedList<>();
-        mobilityDetector = new MobilityDetector();
 
-        // Initilaize the mobility detector
+        // Initialize and run the mobility detector
+        mobilityDetector = new MobilityDetector(this);
+        new Thread(mobilityDetector).start();
 
+        // Initilaize the resource reporter
+        resourceReporter = new ResourceReporter(this);
+        new Thread(resourceReporter).start();
+
+        // Initialize and run the QoS interpreter
+        qosInterpreter = new QoSInterpreter(this);
+        new Thread(qosInterpreter).start();
+
+        // Generate the Flex ID of the device
         deviceID = FlexID.generateDeviceID();
+
+        // Initialize the subscription to necessary messages
         initSubscribe(deviceID);
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: Initialize FogOSCore");
     }
@@ -56,7 +69,6 @@ public class FogOSCore {
     // Access to the cloud to get the list of the FogOS brokers
     void retrieveBrokerList() {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: retrieveBrokerList()");
-        // TODO: Implement this function
         // request the list to the cloud
         // parse the response and add brokers to "brokers"
         NetworkThread thread = new NetworkThread();
@@ -115,10 +127,14 @@ public class FogOSCore {
         @Override
         public void run() {
             brokers = new LinkedList<FogOSBroker>();
+            java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "The structure of brokers is initialized.");
             try {
-                URL url = new URL("http://" + cloudName + ":" + cloudPort + "/brokers");
+                String requestBrokerListURL = "http://" + cloudName + ":" + cloudPort + "/brokers";
+                java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Request URL: " + requestBrokerListURL);
+                URL url = new URL(requestBrokerListURL);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
+                java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "After openConnection: " + conn);
+                //conn.setRequestMethod("GET");
 
                 if(conn.getResponseCode() == 200){
                     InputStream stream = conn.getInputStream();
@@ -137,6 +153,7 @@ public class FogOSCore {
                         for(int i = 0; i < array.length(); i++){
                             String name = array.getJSONObject(i).getString("name");
                             brokers.add(new FogOSBroker(name));
+                            java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "The broker is added: " + name);
                         }
                     }
                 }
@@ -145,58 +162,12 @@ public class FogOSCore {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             } catch (IOException e) {
+                brokers.add(new FogOSBroker("www.versatile-broker-1.com"));
+                brokers.add(new FogOSBroker("www.versatile-broker-2.com"));
                 e.printStackTrace();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private class MobilityDetector {
-        boolean checkAddress(FlexID id) {
-            boolean ret;
-            String ip = "";
-
-            while (ip.equals("")) {
-                ip = getLocalIpAddress();
-            }
-
-            if (id.getLocator().getAddr().equals(ip)) {
-                ret = false;
-            } else {
-                ret = true;
-                while (ready == false) {}
-                id.getLocator().setAddr(getLocalIpAddress());
-
-                // Notify the mobility to FlexIDSessions.
-
-            }
-            return ret;
-        }
-
-        String getLocalIpAddress() {
-            String ip = "";
-
-            try {
-                Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface.getNetworkInterfaces();
-
-                while (enumNetworkInterfaces.hasMoreElements()) {
-                    NetworkInterface networkInterface = enumNetworkInterfaces.nextElement();
-                    Enumeration<InetAddress> enumInetAddress = networkInterface.getInetAddresses();
-
-                    while (enumInetAddress.hasMoreElements()) {
-                        InetAddress inetAddress = enumInetAddress.nextElement();
-
-                        if (inetAddress.isSiteLocalAddress()) {
-                            ip = inetAddress.getHostAddress();
-                        }
-                    }
-                }
-            } catch (SocketException e) {
-                e.printStackTrace();
-            }
-
-            return ip;
         }
     }
 
