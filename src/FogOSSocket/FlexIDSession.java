@@ -16,10 +16,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.logging.Level;
 
 public class FlexIDSession {
     private static int port = 3335; // serverSock's default port
     //int lock = 0;
+
+    private static final String TAG = "FogOSSession";
 
     private FlexID SFID; // source FlexID
     private FlexID DFID; // destination FlexID
@@ -71,6 +74,12 @@ public class FlexIDSession {
             isServer = 1;
         } else {
             socket = new FlexIDSocket(DFID); // connect to server
+            java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Client's IP address: " + socket.getLocalInetAddress() + ":" + socket.getLocalPort());
+
+            if (SFID.getLocator() == null) {
+                SFID.setLocator(new Locator(InterfaceType.ETH, socket.getInetAddress(), socket.getPort()));
+            }
+
             isServer = 0;
         }
     }
@@ -112,8 +121,14 @@ public class FlexIDSession {
         retransmission = true;
     }
 
-    public static FlexIDSession accept() {
-        FlexIDServerSocket server = new FlexIDServerSocket(port);
+    public static FlexIDSession accept(FlexID flexID) {
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: FlexIDSession accept");
+        FlexIDServerSocket server;
+        if (flexID != null) {
+            server = new FlexIDServerSocket(flexID.getLocator().getPort());
+        } else {
+            server = new FlexIDServerSocket(port);
+        }
         System.out.println("Server waits a connection.");
         FlexIDSocket sock = server.accept();
         if(sock == null) {
@@ -135,6 +150,7 @@ public class FlexIDSession {
         dFID.setIdentity("0x1111".getBytes());
         dFID.setLocator(dLoc);
 
+        java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: FlexIDSession accept");
         return new FlexIDSession(sFID, dFID, sock);
     }
 

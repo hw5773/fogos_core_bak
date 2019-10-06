@@ -2,6 +2,7 @@ package FogOSCore;
 
 import FogOSMessage.*;
 import FlexID.FlexID;
+import FlexID.FlexIDFactory;
 import FlexID.Locator;
 import FlexID.InterfaceType;
 import FogOSSecurity.Role;
@@ -21,6 +22,7 @@ public class FogOSCore {
     private final int cloudPort = 3333;
     private LinkedList<FogOSBroker> brokers;
     private FogOSBroker broker;
+    private FlexIDFactory factory;
     private FlexID deviceID;
     private ContentStore store;
     private MqttClient mqttClient;
@@ -63,7 +65,8 @@ public class FogOSCore {
         qosInterpreter = new QoSInterpreter(this);
 
         // Generate the Flex ID of the device
-        // deviceID = FlexID.generateDeviceID();
+        // factory = new FlexIDFactory();
+        // deviceID = factory.generateDeviceID();
         deviceID = new FlexID("versatile");
 
         // Initialize the MQTT client

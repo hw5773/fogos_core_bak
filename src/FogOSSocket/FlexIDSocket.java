@@ -108,7 +108,15 @@ public class FlexIDSocket {
         return socket.getInetAddress().getHostAddress();
     }
 
+    public String getLocalInetAddress() {
+        return socket.getLocalAddress().getHostAddress();
+    }
+
     public int getPort() {
         return socket.getPort();
+    }
+
+    public int getLocalPort() {
+        return socket.getLocalPort();
     }
 }

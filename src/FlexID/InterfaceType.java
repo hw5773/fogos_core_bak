@@ -4,6 +4,11 @@ package FlexID;
  * This enum class defines interfaces
  */
 public enum InterfaceType {
+    UNKNOWN("unknown") {
+        public void printInterface() {
+            System.out.println("This interface is unknown");
+        }
+    },
     WIFI("wifi") {
         public void printInterface() {
             System.out.println("This interface is wifi");

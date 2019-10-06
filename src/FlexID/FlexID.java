@@ -1,5 +1,6 @@
 package FlexID;
 
+import java.security.*;
 import java.util.logging.Level;
 
 public class FlexID implements FlexIDInterface {
@@ -7,6 +8,7 @@ public class FlexID implements FlexIDInterface {
     private byte[] identity;            // The hash value of the public key
     private String sidentity;
     private byte[] priv;                // The private key corresponding to the above public key
+    private byte[] pub;
     private FlexIDType type;            // The type of Flex ID
     private AttrValuePairs avps;        // The attribute-value pairs of Flex ID
     private Locator loc;                // The locator
@@ -41,14 +43,31 @@ public class FlexID implements FlexIDInterface {
         this.priv = null;
     }
 
+    public FlexID(byte[] priv, byte[] pub, FlexIDType type, AttrValuePairs avps, Locator loc) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            digest.reset();
+            digest.update(pub);
+            this.identity = digest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        this.priv = priv;
+        this.pub = pub;
+        this.type = type;
+        this.avps = avps;
+        this.loc = loc;
+    }
+
     // TODO: Should implement this function
-    public static FlexID generateDeviceID() {
-        byte[] testID = new byte[] {
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
+    public static FlexID testDeviceID() {
+        byte[] identity = {
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0
         };
 
-        return new FlexID(testID, FlexIDType.DEVICE, new AttrValuePairs(), null);
+        return new FlexID(identity, FlexIDType.DEVICE, new AttrValuePairs(), null);
     }
 
     public byte[] getIdentity() {
@@ -104,5 +123,13 @@ public class FlexID implements FlexIDInterface {
 
     public void setPriv(byte[] priv) {
         this.priv = priv;
+    }
+
+    public byte[] getPub() {
+        return pub;
+    }
+
+    public void setPub(byte[] pub) {
+        this.pub = pub;
     }
 }

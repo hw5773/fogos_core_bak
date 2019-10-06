@@ -2,10 +2,12 @@ package FogOSSocket;
 
 import java.net.*;
 import java.util.Enumeration;
+import java.util.logging.Level;
 
 public class FlexIDServerSocket {
     private ServerSocket server;
     private FlexIDSocket socket;
+    private static final String TAG = "FogOSSocket";
 
     FlexIDServerSocket() {
         try {
@@ -24,6 +26,7 @@ public class FlexIDServerSocket {
 
     FlexIDSocket accept() {
         try {
+            java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: FlexIDSockst accept: port: " + server.getLocalPort());
             Socket sock = server.accept();
             socket = new FlexIDSocket(sock);
             System.out.println("Accept success.");

@@ -3,6 +3,10 @@ package FlexID;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
 
 public class FlexIDFactory implements FlexIDFactoryInterface {
@@ -12,6 +16,23 @@ public class FlexIDFactory implements FlexIDFactoryInterface {
     public FlexIDFactory() { this.dev = null; }
     public FlexIDFactory(DeviceID dev) {
         this.dev = dev;
+    }
+
+    public FlexID generateDeviceID() {
+        byte[] identity;
+        Key pub = null;
+        Key priv = null;
+        try {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(2048);
+            KeyPair kp = kpg.generateKeyPair();
+            pub = kp.getPublic();
+            priv = kp.getPrivate();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        return new FlexID(priv.getEncoded(), pub.getEncoded(), FlexIDType.DEVICE, new AttrValuePairs(), null);
     }
 
     @Override

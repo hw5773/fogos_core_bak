@@ -7,6 +7,8 @@ package FlexID;
 
 public interface FlexIDFactoryInterface {
 
+    public FlexID generateDeviceID();
+
     /**
      * This function generates the new Flex ID with regard to the interface inputted
      * @param peer the peer's Flex ID to get the appropriate Flex ID
