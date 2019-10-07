@@ -18,7 +18,7 @@ public class ResourceReporter implements Runnable {
     private LinkedList<String> statusIDList;
     private final int PERIOD = 1000;
 
-    ResourceReporter(FogOSCore core) {
+    public ResourceReporter(FogOSCore core) {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize ResourceReporter");
         this.core = core;
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: Initialize ResourceReporter");

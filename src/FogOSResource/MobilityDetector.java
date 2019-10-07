@@ -21,7 +21,7 @@ public class MobilityDetector implements Runnable {
     private LinkedList<String> mapUpdateIDList;
     private String prev, curr;
 
-    MobilityDetector(FogOSCore core) {
+    public MobilityDetector(FogOSCore core) {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize MobilityDetector");
         this.core = core;
         interfaceIPAddr = new HashMap<String, String>();
