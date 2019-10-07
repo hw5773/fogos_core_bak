@@ -1,6 +1,7 @@
-package FogOSCore;
+package FogOSResource;
 
 import FlexID.FlexID;
+import FogOSCore.FogOSCore;
 import FogOSMessage.MapUpdateMessage;
 import FogOSMessage.Message;
 import FogOSMessage.MessageType;

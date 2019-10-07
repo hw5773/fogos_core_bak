@@ -1,4 +1,4 @@
-package FogOSCore;
+package FogOSStore;
 
 public class ContentStore {
 }
