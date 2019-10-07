@@ -6,6 +6,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
@@ -14,6 +15,8 @@ import java.util.logging.Level;
 
 public class RecordProtocolManager extends ProtocolManager {
     private static final String TAG = "FogOSSecurity";
+    private static final int GCM_IV_LENGTH = 12;
+    private static final int GCM_TAG_LENGTH = 16;
 
     RecordProtocolManager(SecurityParameters securityParameters, FlexIDSession flexIDSession) {
         super(securityParameters, flexIDSession);
@@ -27,13 +30,17 @@ public class RecordProtocolManager extends ProtocolManager {
             e.printStackTrace();
         }
         int ret;
+        int sent;
         byte[] ciph = null;
         if (this.securityParameters.getRole() == Role.INITIATOR) {
             ciph = encrypt(this.securityParameters.getI2rSecret(), msg, len);
         } else {
             ciph = encrypt(this.securityParameters.getR2iSecret(), msg, len);
         }
-        this.flexIDSession.send(ciph);
+        sent = this.flexIDSession.send(ciph);
+        System.out.println("Sent: " + sent + " bytes");
+        System.out.println("Sent Message");
+        System.out.println(byteArrayToHex(ciph, sent));
 
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: send()");
         return len;
@@ -43,13 +50,26 @@ public class RecordProtocolManager extends ProtocolManager {
         byte[] ciph = new byte[16384];
         int rcvd = this.flexIDSession.receive(ciph);
         byte[] ret;
-        if (this.securityParameters.getRole() == Role.INITIATOR) {
-            ret = decrypt(this.securityParameters.getR2iSecret(), ciph, rcvd);
-        } else {
-            ret = decrypt(this.securityParameters.getI2rSecret(), ciph, rcvd);
+        if (rcvd > 0) {
+            System.out.println("Received: " + rcvd + " bytes");
+            System.out.println("Received Message");
+            System.out.println(byteArrayToHex(ciph, rcvd));
+
+            if (this.securityParameters.getRole() == Role.INITIATOR) {
+                ret = decrypt(this.securityParameters.getR2iSecret(), ciph, rcvd);
+            } else {
+                ret = decrypt(this.securityParameters.getI2rSecret(), ciph, rcvd);
+            }
+            System.arraycopy(ret, 0, msg, 0, ret.length);
+            rcvd = ret.length;
+
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        System.arraycopy(ret, 0, msg, 0, ret.length);
-        return ret.length;
+        return rcvd;
     }
 
     byte[] encrypt(SecretKeySpec key, byte[] msg, int len) {
@@ -57,14 +77,20 @@ public class RecordProtocolManager extends ProtocolManager {
         byte[] buf = new byte[len];
         System.arraycopy(msg, 0, buf, 0, len);
         try {
-            Cipher cipher = Cipher.getInstance("AES/GCM/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.reset();
             digest.update((byte) this.securityParameters.getWriteSequence());
             digest.update(this.securityParameters.getMasterSecret());
-            byte[] iv = digest.digest();
+            byte[] ivtmp = digest.digest();
+            byte[] iv = new byte[GCM_IV_LENGTH];
+            System.arraycopy(ivtmp, 0, iv, 0, GCM_IV_LENGTH);
+            System.out.println("Key");
+            System.out.println(byteArrayToHex(key.getEncoded(), -1));
+            System.out.println("Initialization Vector");
+            System.out.println(byteArrayToHex(iv, GCM_IV_LENGTH));
 
-            cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+            cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv));
             ret = cipher.doFinal(msg);
             this.securityParameters.setWriteSequence(this.securityParameters.getWriteSequence() + 1);
         } catch (NoSuchAlgorithmException e) {
@@ -82,6 +108,14 @@ public class RecordProtocolManager extends ProtocolManager {
         } catch (InvalidAlgorithmParameterException e) {
             e.printStackTrace();
         }
+
+        if (ret == null) {
+            System.out.println("encrypted value is null");
+        } else {
+            System.out.println("encrypted value is not null");
+            System.out.println("Encrypted Message (" + ret.length + " bytes)");
+            System.out.println(byteArrayToHex(ret, -1));
+        }
         return ret;
     }
 
@@ -90,15 +124,21 @@ public class RecordProtocolManager extends ProtocolManager {
         byte[] buf = new byte[len];
         System.arraycopy(ciph, 0, buf, 0, len);
         try {
-            Cipher cipher = Cipher.getInstance("AES/GCM/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.reset();
             digest.update((byte) this.securityParameters.getReadSequence());
             digest.update(this.securityParameters.getMasterSecret());
-            byte[] iv = digest.digest();
+            byte[] ivtmp = digest.digest();
+            byte[] iv = new byte[GCM_IV_LENGTH];
+            System.arraycopy(ivtmp, 0, iv, 0, GCM_IV_LENGTH);
+            System.out.println("Key");
+            System.out.println(byteArrayToHex(key.getEncoded(), -1));
+            System.out.println("Initialization Vector");
+            System.out.println(byteArrayToHex(iv, GCM_IV_LENGTH));
 
-            cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-            ret = cipher.doFinal(ciph);
+            cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv));
+            ret = cipher.doFinal(buf);
 
             this.securityParameters.setReadSequence(this.securityParameters.getReadSequence() + 1);
         } catch (NoSuchAlgorithmException e) {
@@ -115,6 +155,14 @@ public class RecordProtocolManager extends ProtocolManager {
             e.printStackTrace();
         } catch (InvalidAlgorithmParameterException e) {
             e.printStackTrace();
+        }
+
+        if (ret == null) {
+            System.out.println("decrypted value is null");
+        } else {
+            System.out.println("decrypted value is not null");
+            System.out.println("Decrypted Message (" + ret.length + " bytes)");
+            System.out.println(byteArrayToHex(ret, -1));
         }
         return ret;
     }

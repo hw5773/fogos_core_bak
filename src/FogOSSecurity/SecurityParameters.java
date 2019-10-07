@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 public class SecurityParameters {
     // parameters
     private Role role;
-    private final int KEY_LENGTH = 32;
+    private final int KEY_LENGTH = 16;
     private byte[] masterSecret;
     private SecretKeySpec i2rSecret; // The session key from an initiator to a responder
     private SecretKeySpec r2iSecret; // The session key from an responder to an initiator
@@ -28,6 +28,7 @@ public class SecurityParameters {
 
     public void setMasterSecret(byte[] masterSecret) {
         this.masterSecret = masterSecret;
+        generateKeys();
     }
 
     public byte[] getMasterSecret() {
@@ -36,25 +37,27 @@ public class SecurityParameters {
 
     public void generateKeys() {
         byte[] tmp;
+        byte[] key = new byte[KEY_LENGTH];
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA256");
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.reset();
             digest.update(masterSecret);
             tmp = digest.digest();
-            i2rSecret = new SecretKeySpec(tmp, "AES");
+            System.arraycopy(tmp, 0, key, 0, KEY_LENGTH);
+            i2rSecret = new SecretKeySpec(key, "AES");
+
+            System.out.println("I2R AES Key (" + key.length + " bytes)");
+            System.out.println ("{ " + byteArrayToHex(key) + " }");
+            System.out.println("");
 
             digest.reset();
             digest.update(tmp);
             tmp = digest.digest();
+            System.arraycopy(tmp, 0, key, 0, KEY_LENGTH);
+            r2iSecret = new SecretKeySpec(key, "AES");
 
-            System.out.println("I2R AES Key");
-            System.out.println ("{ " + byteArrayToHex(tmp) + " }");
-            System.out.println("");
-
-            r2iSecret = new SecretKeySpec(tmp, "AES");
-
-            System.out.println("R2I AES Key");
-            System.out.println ("{ " + byteArrayToHex(tmp) + " }");
+            System.out.println("R2I AES Key (" + key.length + " bytes)");
+            System.out.println ("{ " + byteArrayToHex(key) + " }");
             System.out.println("");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
