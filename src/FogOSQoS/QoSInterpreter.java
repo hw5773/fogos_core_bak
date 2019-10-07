@@ -1,16 +1,17 @@
-package FogOSCore;
+package FogOSQoS;
 
+import FogOSCore.FogOSCore;
 import FogOSMessage.QueryMessage;
 import FogOSMessage.RequestMessage;
 
 import java.util.Hashtable;
 import java.util.logging.Level;
 
-public class QoSInterpreter {
+public class QoSInterpreter implements QoSInterpreterInterface {
     private FogOSCore core;
     private static final String TAG = "FogOSQoSInterpreter";
 
-    QoSInterpreter(FogOSCore core) {
+    public QoSInterpreter(FogOSCore core) {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize QoSInterpreter");
         this.core = core;
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: Initialize QoSInterpreter");

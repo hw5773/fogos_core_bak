@@ -5,6 +5,7 @@ import FlexID.FlexID;
 import FlexID.FlexIDFactory;
 import FlexID.Locator;
 import FlexID.InterfaceType;
+import FogOSQoS.QoSInterpreter;
 import FogOSSecurity.Role;
 import FogOSSecurity.SecureFlexIDSession;
 import org.eclipse.paho.client.mqttv3.*;
