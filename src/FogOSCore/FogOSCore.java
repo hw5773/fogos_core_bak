@@ -46,13 +46,13 @@ public class FogOSCore {
 
     private static final String TAG = "FogOSCore";
 
-    public FogOSCore() {
+    public FogOSCore(String path) {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize FogOSCore");
 
         retrieveBrokerList();
         broker = findBestFogOSBroker();
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Result: findBestFogOSBroker() " + broker.getName());
-        store = new ContentStore();
+        store = new ContentStore(path);
 
         sessionList = new LinkedList<>();
         initReceivedMessages();
@@ -83,6 +83,9 @@ public class FogOSCore {
         // TODO: Need to generalize the message
         Message msg = new JoinMessage(deviceID);
         msg.test(broker); // This should be commented out after being generalized.
+
+        Message rmsg = new RegisterMessage(deviceID, store);
+        rmsg.test(broker);
 
         try {
 
