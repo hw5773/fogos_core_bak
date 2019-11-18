@@ -15,6 +15,6 @@ public enum FlexIDType {
 
     @Override
     public String toString() {
-        return new Integer(type).toString();
+        return Integer.toString(type);
     }
 }

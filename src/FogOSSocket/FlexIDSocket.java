@@ -51,7 +51,7 @@ public class FlexIDSocket {
         } catch (Exception e) {
             System.out.println("error in read()");
             e.printStackTrace();
-//			System.exit(0);
+			System.exit(0);
         }
         return null;
     }
