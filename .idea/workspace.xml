@@ -6,13 +6,7 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="08f5d5ff-90bf-4340-a9ab-98d6aea2f4fd" name="Default Changelist" comment="Update the FlexID related functions">
-      <change beforePath="$PROJECT_DIR$/.idea/artifacts/FogOSCore_jar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/FogOSCore_jar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FogOSCore.iml" beforeDir="false" afterPath="$PROJECT_DIR$/FogOSCore.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/FlexID/FlexIDType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/FlexID/FlexIDType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/FogOSSocket/FlexIDSocket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/FogOSSocket/FlexIDSocket.java" afterDir="false" />
-    </list>
+    <list default="true" id="08f5d5ff-90bf-4340-a9ab-98d6aea2f4fd" name="Default Changelist" comment="hmlee" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +23,19 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <favorite-branches>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="hmlee" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="master" />
@@ -183,7 +190,14 @@
       <option name="project" value="LOCAL" />
       <updated>1570423862226</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="hmlee">
+      <created>1574064812316</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1574064812316</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -211,6 +225,7 @@
     <MESSAGE value="Complete to implement the record layer" />
     <MESSAGE value="Refactor the FogOSQoS module" />
     <MESSAGE value="Update the modules" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update the modules" />
+    <MESSAGE value="hmlee" />
+    <option name="LAST_COMMIT_MESSAGE" value="hmlee" />
   </component>
 </project>
