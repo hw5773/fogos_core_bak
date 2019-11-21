@@ -63,11 +63,14 @@ public class RecordProtocolManager extends ProtocolManager {
             System.arraycopy(ret, 0, msg, 0, ret.length);
             rcvd = ret.length;
 
+            /*
             try {
                 Thread.sleep(1000);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+             */
         }
         return rcvd;
     }

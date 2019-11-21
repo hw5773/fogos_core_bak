@@ -3,6 +3,8 @@ package FogOSSecurity;
 import FlexID.FlexID;
 import FogOSSocket.FlexIDSession;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 
 public class SecureFlexIDSession {
@@ -39,8 +41,8 @@ public class SecureFlexIDSession {
         this.recordManager = new RecordProtocolManager(this.securityParameters, this.flexIDSession);
     }
 
-    public int doHandshake() {
-        return this.handshakeManager.doHandshake();
+    public int doHandshake(int isServer) throws Exception {
+        return this.handshakeManager.doHandshake(isServer);
     }
 
     public int send(byte[] msg, int len) {
@@ -48,22 +50,28 @@ public class SecureFlexIDSession {
     }
 
     public int send(String msg) {
-        System.out.println("Send message (" + msg.length() + " bytes)");
+        //System.out.println("Send message (" + msg.length() + " bytes)");
+        /*
         try {
-            Thread.sleep(1000);
+            Thread.sleep(10);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+         */
+
         return this.recordManager.send(msg.getBytes(), msg.length());
     }
 
     public int recv(byte[] buf, int len) {
-        System.out.println("Receive message");
+        //System.out.println("Receive message");
+/*
         try {
-            Thread.sleep(1000);
+            Thread.sleep(10);
         } catch (Exception e) {
             e.printStackTrace();
         }
+ */
         return this.recordManager.recv(buf, len);
     }
 
