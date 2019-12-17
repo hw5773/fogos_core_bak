@@ -46,13 +46,13 @@ public class FogOSCore {
 
     private static final String TAG = "FogOSCore";
 
-    public FogOSCore() {
+    public FogOSCore(String path) {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize FogOSCore");
 
         retrieveBrokerList();
         broker = findBestFogOSBroker();
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Result: findBestFogOSBroker() " + broker.getName());
-        store = new ContentStore();
+        store = new ContentStore(path);
 
         sessionList = new LinkedList<>();
         initReceivedMessages();
@@ -83,6 +83,9 @@ public class FogOSCore {
         // TODO: Need to generalize the message
         Message msg = new JoinMessage(deviceID);
         msg.test(broker); // This should be commented out after being generalized.
+
+        Message rmsg = new RegisterMessage(deviceID, store);
+        rmsg.test(broker);
 
         try {
 
@@ -135,8 +138,7 @@ public class FogOSCore {
     }
 
     // Ping test and select the best FogOS broker
-    FogOSBroker findBestFogOSBroker()
-    {
+    FogOSBroker findBestFogOSBroker() {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: findBestFogOSBroker()");
 
         Double rtt1 = 0.0;
@@ -147,7 +149,7 @@ public class FogOSCore {
             StringBuilder builder = new StringBuilder();
             String line;
 
-            while((line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 builder.append(line);
             }
             String result1 = builder.toString();
@@ -156,7 +158,7 @@ public class FogOSCore {
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             builder = new StringBuilder();
 
-            while((line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 builder.append(line);
             }
             String result2 = builder.toString();
@@ -175,7 +177,7 @@ public class FogOSCore {
             return brokers.get(1);
     }
 
-    class NetworkThread extends Thread{
+    class NetworkThread extends Thread {
 
         @Override
         public void run() {
@@ -189,21 +191,21 @@ public class FogOSCore {
                 java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "After openConnection: " + conn);
                 //conn.setRequestMethod("GET");
 
-                if(conn.getResponseCode() == 200){
+                if (conn.getResponseCode() == 200) {
                     InputStream stream = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "utf-8"));
                     StringBuilder builder = new StringBuilder();
                     String line;
 
-                    while((line = reader.readLine()) != null){
+                    while ((line = reader.readLine()) != null) {
                         builder.append(line);
                     }
 
                     JSONObject object = new JSONObject(builder.toString());
-                    if(object.length() != 0){
+                    if (object.length() != 0) {
                         JSONArray array = object.getJSONArray("brokers");
 
-                        for(int i = 0; i < array.length(); i++){
+                        for (int i = 0; i < array.length(); i++) {
                             String name = array.getJSONObject(i).getString("name");
                             brokers.add(new FogOSBroker(name));
                             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "The broker is added: " + name);
@@ -224,17 +226,17 @@ public class FogOSCore {
         }
     }
 
-    Double getPingStats(String result){
+    Double getPingStats(String result) {
         Double rtt = 1000.0;
 
-        if(result.contains("unknown host") || result.contains("100% packet loss")){
+        if (result.contains("unknown host") || result.contains("100% packet loss")) {
 
-        } else if(result.contains("% packet loss")){
+        } else if (result.contains("% packet loss")) {
             int start = result.indexOf("rtt min/avg/max/mdev");
             int end = result.indexOf("ms", start);
             String stats = result.substring(start + 23, end);
             rtt = Double.parseDouble(stats.split("/")[1]);
-        } else{
+        } else {
 
         }
 
@@ -287,7 +289,7 @@ public class FogOSCore {
         return msg;
     }
 
-    public void connect(FlexID deviceID){
+    public void connect(FlexID deviceID) {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: connect()");
         try {
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "broker.getName(): " + broker.getName() + " / broker.getPort(): " + broker.getPort() + " / deviceID.getStringIdentity(): " + deviceID.getStringIdentity());
@@ -343,7 +345,7 @@ public class FogOSCore {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: connect()");
     }
 
-    public void disconnect(){
+    public void disconnect() {
         try {
             mqttClient.disconnect();
             Logger.getLogger(TAG).log(Level.INFO, "Mqtt: disconnect()");
@@ -352,7 +354,7 @@ public class FogOSCore {
         }
     }
 
-    public void subscribe(String topic){
+    public void subscribe(String topic) {
         try {
             mqttClient.subscribe(topic, new IMqttMessageListener() {
                 @Override
@@ -383,20 +385,20 @@ public class FogOSCore {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: testMessage(): MessageType: " + msg.getMessageType().toString());
 
         /* Test Returns */
-        if (msg.getMessageType() == MessageType.QUERY && msg.getValueByAttr("keywords").equals("test")) {
+        if (msg.getMessageType() == MessageType.QUERY && msg.getValueByAttr("keywords").equals("public")) {
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Make a test list started.");
             ReplyMessage replyMessage;
             FlexID id;
             replyMessage = (ReplyMessage) generateMessage(MessageType.REPLY);
-            id = new FlexID("test");
+            id = new FlexID("transit");
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "id 1: " + id + " / ID 1: " + new String(id.getIdentity()));
-            replyMessage.addReplyEntry("환호하는 손흥민", "손흥민이 한독전에서 골을 넣고 환호하고 있다.", id);
-            id = new FlexID("test");
+            replyMessage.addReplyEntry("대중교통 공익광고", "대중교통을 이용합시다!", id);
+            id = new FlexID("public");
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "id 2: " + id + " / ID 2: " + new String(id.getIdentity()));
-            replyMessage.addReplyEntry("기뻐하는 김영권 영상", "온국민을 환호하게 만든 김영권의 첫골을 다시보자.", id);
+            replyMessage.addReplyEntry("금연 실천 비디오", "모두의 건강을 지키는 것이 공익입니다", id);
             id = new FlexID("test");
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "id 3: " + id + " / ID 3: " + new String(id.getIdentity()));
-            replyMessage.addReplyEntry("좌절에 빠진 독일 팬들", "예기치 못한 패배에 독일 팬들은 모두 울상을 짓고 있다.", id);
+            replyMessage.addReplyEntry("공익 실천 프로젝트", "너도 나도 함께하는 자그마한 공익 실천!", id);
             receivedMessages.get(MessageType.REPLY.getTopic()).add(replyMessage);
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Make a test list finished.");
             java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: testMessage()");
@@ -416,15 +418,13 @@ public class FogOSCore {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: sendMessage()");
     }
 
-    public SecureFlexIDSession createSecureFlexIDSession(Role role, FlexID sFID, FlexID dFID)
-    {
+    public SecureFlexIDSession createSecureFlexIDSession(Role role, FlexID sFID, FlexID dFID) {
         SecureFlexIDSession secureFlexIDSession = new SecureFlexIDSession(role, sFID, dFID);
         sessionList.add(secureFlexIDSession);
         return secureFlexIDSession;
     }
 
-    public void destroySecureFlexIDSession(SecureFlexIDSession secureFlexIDSession)
-    {
+    public void destroySecureFlexIDSession(SecureFlexIDSession secureFlexIDSession) {
         secureFlexIDSession.getFlexIDSession().close();
         sessionList.remove(secureFlexIDSession);
     }

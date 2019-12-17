@@ -19,7 +19,7 @@ public class CircularQueue {
     }
 
     public CircularQueue() {
-        this(10000000);
+        this(5000000);
     }
 
     public boolean isEmpty(int size) {

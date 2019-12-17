@@ -12,9 +12,9 @@ public class FogOSClient implements FogOSClientAPI {
     private FogOSCore core;
     private static final String TAG = "FogOSClient";
 
-    public FogOSClient() {
+    public FogOSClient(String path) {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: Initialize FogOSClient");
-        core = new FogOSCore();
+        core = new FogOSCore(path);
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: Initialize FogOSClient");
     }
 
