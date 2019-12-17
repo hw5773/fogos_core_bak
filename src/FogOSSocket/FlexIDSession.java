@@ -305,7 +305,7 @@ public class FlexIDSession {
 
                     if(!wbuf.isEmpty(1)) {
                         //lock = 1;
-                        byte[] data = new byte[2048];
+                        byte[] data = new byte[65536];
                         int dataLen = wbuf.read(data);
                         System.out.println("Messages to be sent: " + dataLen);
                         data = Arrays.copyOfRange(data, 0, dataLen);
