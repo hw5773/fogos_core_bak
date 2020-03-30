@@ -38,9 +38,9 @@ public class RecordProtocolManager extends ProtocolManager {
             ciph = encrypt(this.securityParameters.getR2iSecret(), msg, len);
         }
         sent = this.flexIDSession.send(ciph);
-        System.out.println("Sent: " + sent + " bytes");
-        System.out.println("Sent Message");
-        System.out.println(byteArrayToHex(ciph, sent));
+        //System.out.println("Sent: " + sent + " bytes");
+        //System.out.println("Sent Message");
+        //System.out.println(byteArrayToHex(ciph, sent));
 
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Finish: send()");
         return len;
@@ -51,9 +51,9 @@ public class RecordProtocolManager extends ProtocolManager {
         int rcvd = this.flexIDSession.receive(ciph);
         byte[] ret;
         if (rcvd > 0) {
-            System.out.println("Received: " + rcvd + " bytes");
-            System.out.println("Received Message");
-            System.out.println(byteArrayToHex(ciph, rcvd));
+            //System.out.println("Received: " + rcvd + " bytes");
+            //System.out.println("Received Message");
+            //System.out.println(byteArrayToHex(ciph, rcvd));
 
             if (this.securityParameters.getRole() == Role.INITIATOR) {
                 ret = decrypt(this.securityParameters.getR2iSecret(), ciph, rcvd);
@@ -87,11 +87,11 @@ public class RecordProtocolManager extends ProtocolManager {
             digest.update(this.securityParameters.getMasterSecret());
             byte[] ivtmp = digest.digest();
             byte[] iv = new byte[GCM_IV_LENGTH];
-            System.arraycopy(ivtmp, 0, iv, 0, GCM_IV_LENGTH);
-            System.out.println("Key");
-            System.out.println(byteArrayToHex(key.getEncoded(), -1));
-            System.out.println("Initialization Vector");
-            System.out.println(byteArrayToHex(iv, GCM_IV_LENGTH));
+            //System.arraycopy(ivtmp, 0, iv, 0, GCM_IV_LENGTH);
+            //System.out.println("Key");
+            //System.out.println(byteArrayToHex(key.getEncoded(), -1));
+            //System.out.println("Initialization Vector");
+            //System.out.println(byteArrayToHex(iv, GCM_IV_LENGTH));
 
             cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv));
             ret = cipher.doFinal(msg);
@@ -134,11 +134,11 @@ public class RecordProtocolManager extends ProtocolManager {
             digest.update(this.securityParameters.getMasterSecret());
             byte[] ivtmp = digest.digest();
             byte[] iv = new byte[GCM_IV_LENGTH];
-            System.arraycopy(ivtmp, 0, iv, 0, GCM_IV_LENGTH);
-            System.out.println("Key");
-            System.out.println(byteArrayToHex(key.getEncoded(), -1));
-            System.out.println("Initialization Vector");
-            System.out.println(byteArrayToHex(iv, GCM_IV_LENGTH));
+            //System.arraycopy(ivtmp, 0, iv, 0, GCM_IV_LENGTH);
+            //System.out.println("Key");
+            //System.out.println(byteArrayToHex(key.getEncoded(), -1));
+            //System.out.println("Initialization Vector");
+            //System.out.println(byteArrayToHex(iv, GCM_IV_LENGTH));
 
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv));
             ret = cipher.doFinal(buf);

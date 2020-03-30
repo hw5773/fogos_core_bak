@@ -269,7 +269,7 @@ public class FlexIDSession {
                     message = socket.read();
 
                 if(message != null) {
-                    System.out.println("Received) " + message.length + "  sentSEQ) " + sentSEQ + "  sentACK) " + sentACK + "  recvSEQ) " + recvSEQ + "  recvACK) " + recvACK);
+                    //System.out.println("Received) " + message.length + "  sentSEQ) " + sentSEQ + "  sentACK) " + sentACK + "  recvSEQ) " + recvSEQ + "  recvACK) " + recvACK);
                     return message;
                 }
             } catch (Exception e) {
