@@ -13,15 +13,30 @@ import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.util.logging.Level;
 
+/**
+ *  Implements an API for record handling
+ *  @author Hyeonmin Lee
+ */
 public class RecordProtocolManager extends ProtocolManager {
     private static final String TAG = "FogOSSecurity";
     private static final int GCM_IV_LENGTH = 12;
     private static final int GCM_TAG_LENGTH = 16;
 
+    /**
+     * Construct the RecordProtocolManager
+     * @param securityParameters the SecurityParameters
+     * @param flexIDSession the FlexIDSession
+     */
     RecordProtocolManager(SecurityParameters securityParameters, FlexIDSession flexIDSession) {
         super(securityParameters, flexIDSession);
     }
 
+    /**
+     * Send the message through flexIDSession
+     * @param msg the message
+     * @param len the length of the message
+     * @return the length of the message
+     */
     public int send(byte[] msg, int len) {
         java.util.logging.Logger.getLogger(TAG).log(Level.INFO, "Start: send()");
         try {
@@ -46,6 +61,12 @@ public class RecordProtocolManager extends ProtocolManager {
         return len;
     }
 
+    /**
+     * Receive the message through flexIDSession
+     * @param msg the buffer
+     * @param len (not used currently)
+     * @return the size of the received message
+     */
     public int recv(byte[] msg, int len) {
         byte[] ciph = new byte[16384];
         int rcvd = this.flexIDSession.receive(ciph);
@@ -75,6 +96,13 @@ public class RecordProtocolManager extends ProtocolManager {
         return rcvd;
     }
 
+    /**
+     * Encrypt the message
+     * @param key the key used to encryption
+     * @param msg the message
+     * @param len the length of the message
+     * @return the encrypted message
+     */
     byte[] encrypt(SecretKeySpec key, byte[] msg, int len) {
         byte[] ret = null;
         byte[] buf = new byte[len];
@@ -122,6 +150,13 @@ public class RecordProtocolManager extends ProtocolManager {
         return ret;
     }
 
+    /**
+     * Decrypt the messsage
+     * @param key the key used to decrypt
+     * @param ciph the encrypted message
+     * @param len the length of the encrypted message
+     * @return the decrypted message
+     */
     byte[] decrypt(SecretKeySpec key, byte[] ciph, int len) {
         byte[] ret = null;
         byte[] buf = new byte[len];

@@ -1,9 +1,6 @@
 package FogOSSecurity;
 
 import FogOSSocket.FlexIDSession;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
-import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.Signature;
 
@@ -17,17 +14,29 @@ import java.util.Base64;
 import java.util.logging.Level;
 import java.security.KeyFactory;
 import javax.crypto.KeyAgreement;
-import javax.crypto.spec.DHParameterSpec;
 
-
+/**
+ *  Implements an API for handshake protocol manager
+ *  @author Hyeonmin Lee
+ */
 public class HandshakeProtocolManager extends ProtocolManager {
     private static final String TAG = "FogOSSecurity";
 
-
+    /**
+     * Construct the HandshakeProtocolManager
+     * @param securityParameters the security parameters
+     * @param flexIDSession the FlexID session
+     */
     HandshakeProtocolManager(SecurityParameters securityParameters, FlexIDSession flexIDSession) {
         super(securityParameters, flexIDSession);
     }
 
+    /**
+     * Perform handshake
+     * @param isServer whether the entity is a responder or not
+     * @return 1 (handshake done) or -1 (error)
+     * @throws Exception an exception
+     */
     public int doHandshake(int isServer) throws Exception {
         byte[] buf = new byte[16384];
         int rcvd;
@@ -135,6 +144,9 @@ public class HandshakeProtocolManager extends ProtocolManager {
             byte[] shared_secret = getSharedSecret(shortPrvkey, decoded_target_shortPubkey, ka);
 
             boolean verified = verifySign(decoded_target_longPubkey, shared_secret, byte_target_sign);
+            if (!verified) {
+                return -1;
+            }
 
             end = Instant.now();
             timeElapsed = Duration.between(start, end).toMillis();
@@ -198,6 +210,9 @@ public class HandshakeProtocolManager extends ProtocolManager {
             byte[] hashed_target_pubkey_A = md.digest();
 
             boolean verified = verifySign(platformPubkey, hashed_target_pubkey_A, byte_target_sign);
+            if (!verified) {
+                return -1;
+            }
 
             byte[] byte_shortPubkey = shortPubkey.getEncoded();
 
@@ -235,6 +250,9 @@ public class HandshakeProtocolManager extends ProtocolManager {
             byte_target_sign = Base64.getDecoder().decode(target_sign);
 
             verified = verifySign(decoded_target_longPubkey, shared_secret, byte_target_sign);
+            if (!verified) {
+                return -1;
+            }
 
             md = MessageDigest.getInstance("SHA-256");
             md.update(shared_secret);
@@ -253,7 +271,7 @@ public class HandshakeProtocolManager extends ProtocolManager {
         return 1;
     }
 
-    public static byte[] sign(PrivateKey prvKey, byte[] data) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+    private static byte[] sign(PrivateKey prvKey, byte[] data) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
         Signature signer = Signature.getInstance("SHA1withRSA");
         signer.initSign(prvKey);
         signer.update(data);
@@ -261,14 +279,14 @@ public class HandshakeProtocolManager extends ProtocolManager {
         return signed;
     }
 
-    public static boolean verifySign(PublicKey key, byte[] data, byte[] signature) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    private static boolean verifySign(PublicKey key, byte[] data, byte[] signature) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         Signature signer = Signature.getInstance("SHA1withRSA");
         signer.initVerify(key);
         signer.update(data);
         return (signer.verify(signature));
     }
 
-    public static KeyPair generateKeyPair(long seed) throws Exception {
+    private static KeyPair generateKeyPair(long seed) throws Exception {
         KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
         SecureRandom random = new SecureRandom();
         keyGenerator.initialize(1024, random);
@@ -276,7 +294,7 @@ public class HandshakeProtocolManager extends ProtocolManager {
         return (keyGenerator.generateKeyPair());
     }
 
-    public static byte[] getSharedSecret (PrivateKey prvKey, PublicKey pubKey, KeyAgreement ka) throws Exception
+    private static byte[] getSharedSecret (PrivateKey prvKey, PublicKey pubKey, KeyAgreement ka) throws Exception
     {
         ka.init(prvKey);
         ka.doPhase(pubKey, true);
